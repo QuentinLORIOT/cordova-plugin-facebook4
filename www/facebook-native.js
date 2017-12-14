@@ -1,22 +1,22 @@
 var exec = require('cordova/exec')
 
-exports.getLoginStatus = function getLoginStatus (s, f) {
+exports.getLoginStatus = function getLoginStatus(s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'getLoginStatus', [])
 }
 
-exports.showDialog = function showDialog (options, s, f) {
+exports.showDialog = function showDialog(options, s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'showDialog', [options])
 }
 
-exports.login = function login (permissions, s, f) {
+exports.login = function login(permissions, s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'login', permissions)
 }
 
-exports.checkHasCorrectPermissions = function checkHasCorrectPermissions (permissions, s, f) {
+exports.checkHasCorrectPermissions = function checkHasCorrectPermissions(permissions, s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'checkHasCorrectPermissions', permissions)
 }
 
-exports.logEvent = function logEvent (name, params, valueToSum, s, f) {
+exports.logEvent = function logEvent(name, params, valueToSum, s, f) {
   // Prevent NSNulls getting into iOS, messes up our [command.argument count]
   if (!params && !valueToSum) {
     exec(s, f, 'FacebookConnectPlugin', 'logEvent', [name])
@@ -29,24 +29,24 @@ exports.logEvent = function logEvent (name, params, valueToSum, s, f) {
   }
 }
 
-exports.logPurchase = function logPurchase (value, currency, s, f) {
+exports.logPurchase = function logPurchase(value, currency, s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'logPurchase', [value, currency])
 }
 
-exports.getAccessToken = function getAccessToken (s, f) {
+exports.getAccessToken = function getAccessToken(s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'getAccessToken', [])
 }
 
-exports.logout = function logout (s, f) {
+exports.logout = function logout(s, f) {
   exec(s, f, 'FacebookConnectPlugin', 'logout', [])
 }
 
-exports.api = function api (graphPath, permissions, s, f) {
+exports.api = function api(graphPath, permissions, s, f) {
   permissions = permissions || []
   exec(s, f, 'FacebookConnectPlugin', 'graphApi', [graphPath, permissions])
 }
 
-exports.appInvite = function appLinks (options, s, f) {
+exports.appInvite = function appLinks(options, s, f) {
   options = options || {}
   exec(s, f, 'FacebookConnectPlugin', 'appInvite', [options])
 }
@@ -60,5 +60,9 @@ exports.activateApp = function (s, f) {
 }
 
 exports.getDeferredApplink = function (s, f) {
-	  exec(s, f, 'FacebookConnectPlugin', 'getDeferredApplink', [])
+  exec(s, f, 'FacebookConnectPlugin', 'getDeferredApplink', [])
+}
+
+exports.storeLogoutUrl = function (url) {
+
 }

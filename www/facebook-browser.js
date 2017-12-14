@@ -1,181 +1,116 @@
-/* globals */
-var __fbSdkReady = false;
-var __fbCallbacks = [];
-/* */
+var FB = window.require('fb');
+var logoutUrl;
 
-exports.getLoginStatus = function getLoginStatus (s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      getLoginStatus(s, f);
-    });
-  }
+exports.getLoginStatus = function getLoginStatus(s, f) {
 
-  FB.getLoginStatus(function (response) {
-    s(response)
-  })
 }
 
-exports.showDialog = function showDialog (options, s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      showDialog(options, s, f);
-    });
-  }
+exports.showDialog = function showDialog(options, s, f) {
 
-  options.name = options.name || ''
-  options.message = options.message || ''
-  options.caption = options.caption || ''
-  options.description = options.description || ''
-  options.href = options.href || ''
-  options.picture = options.picture || ''
-  options.quote = options.quote || ''
-
-  FB.ui(options, function (response) {
-    if (response && (response.request || !response.error_code)) {
-      s(response)
-      return
-    }
-    f(response.message)
-  })
 }
+
 // Attach this to a UI element, this requires user interaction.
-exports.login = function login (permissions, s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      login(permissions, s, f);
-    });
-  }
-  // JS SDK takes an object here but the native SDKs use array.
-  var options = {}
-  if (permissions && permissions.length > 0) {
-    var index = permissions.indexOf('rerequest')
-    if (index > -1) {
-      permissions.splice(index, 1)
-      options.auth_type = 'rerequest'
+exports.login = function login(permissions, s, f) {
+    var scope = permissions.join(',');
+    var fbUrl = 'https://www.facebook.com/v2.8/dialog/oauth?client_id=APP_ID&redirect_uri=https://www.facebook.com/connect/login_success.html&response_type=token&display=popup&scope=' + scope;
+    var webview = document.createElement('webview');
+    webview.setAttribute('id', 'facebook-login');
+    webview.setAttribute('partition', 'persist:facebookconnect.tuto.com');
+    webview.setAttribute('style', 'opacity:0;');
+    webview.src = fbUrl;
+    var el = document.getElementById('background-loading-facebook');
+    el.appendChild(webview);
+    webview.addEventListener('loadcommit', _loadcommit);
+
+    function _loadcommit(event) {
+        var currUrl = document.createElement('a');
+        currUrl.href = event.url;
+        if (currUrl.hostname === 'www.facebook.com' && currUrl.pathname === '/login.php') {
+            if(!el.hasAttribute('login-loaded')) {
+                webview.setAttribute('style', 'opacity:1;');
+                el.setAttribute('login-loaded', '');
+            }
+        } else {
+            _parseAndProcess(event);
+        }
     }
-    options.scope = permissions.join(',')
-  }
 
-  /**
-   * Functions that resolves or rejects a Promise depending on response.
-   *
-   * Cases:
-   * 1. Resolve/Success: If authResponse exists in response, that means that login is successful.
-   *    In that case resolve (success) function will be invoked with authResponse value.
-   * 2. Reject/Failure: In any other case (no response or response.authResponse) reject (failure) is invoked.
-   *  a. response exists and response.status exists, rejected with response.status.message.
-   *  b. response exists and response.status does not exist, rejected with response.
-   *  c. response does not exist, rejected with 'no response' message.
-   */
-  FB.login(function (response) {
-    if (response.authResponse) {
-      s(response)
-    } else if (response) { // Previously this was just an else statement.
-      if (response.status) { // When status is undefined this would throw an error, and rejection function would never be invoked.
-        f(response.status.message)
-      } else {
-        f(response)
-      }
-    } else { // In case that no response is available (e.g. popup dismissed)
-      f('No response')
-    } 
-  }, options)
+    //Parse event and process if needed
+    function _parseAndProcess(event) {
+        var splitUrl = event.url.split('?');
+        var params = (splitUrl[1]) ? splitUrl[1] : event.url.split('#')[1];
+        var paramsSplited = params.split('&');
+        var paramsArr = [];
+
+        paramsSplited.forEach(function (param) {
+            var splited = param.split('=');
+            paramsArr[splited[0]] = splited[1];
+        });
+
+        if (typeof paramsArr['access_token'] !== 'undefined') {
+            FB.options({version: 'v2.7', app_id: APP_ID});
+            FB.setAccessToken(paramsArr['access_token']);
+            s({authResponse: paramsArr['access_token'], status: "connected"});
+        } else {
+            f(paramsArr);
+        }
+
+        webview.removeEventListener('loadcommit', _loadcommit);
+    }
 }
 
-exports.getAccessToken = function getAccessToken (s, f) {
-  var response = FB.getAccessToken()
-  if (response) {
-    s(response)
-    return
-  }
-  f('NO_TOKEN')
+exports.getAccessToken = function getAccessToken(s, f) {
+    s(FB.getAccessToken());
 }
 
-exports.logEvent = function logEvent (eventName, params, valueToSum, s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      logEvent(eventName, params, valueToSum, s, f);
-    });
-  }
-
-  FB.AppEvents.logEvent(eventName, valueToSum, params);
-
-  if(s) s();
+exports.logEvent = function logEvent(eventName, params, valueToSum, s, f) {
+    f('not supported by NW browser');
 }
 
-exports.logPurchase = function logPurchase (value, currency, s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      logPurchase(value, currency, s, f);
-    });
-  }
-  
-  FB.AppEvents.logPurchase(value, currency);
-
-  if(s) s();
+exports.logPurchase = function logPurchase(value, currency, s, f) {
+    f('not supported by NW browser');
 }
 
-exports.appInvite = function appInvite (options, s, f) {
-  // App Invites are not avaliable in JS.
-  if(s) s()
+exports.appInvite = function appInvite(options, s, f) {
+    f('not supported by NW browser');
 }
 
-exports.logout = function logout (s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      logout(s, f);
-    });
-  }
-
-  FB.logout(function (response) {
-    s(response)
-  })
-}
-
-exports.api = function api (graphPath, permissions, s, f) {
-  if (!__fbSdkReady) {
-    return __fbCallbacks.push(function() {
-      api(graphPath, permissions, s, f);
-    });
-  }
-
-  // JS API does not take additional permissions
-  FB.api(graphPath, function (response) {
-    if (response.error) {
-      f(response)
+exports.logout = function logout(s, f) {
+    if (logoutUrl) {
+        logoutUrl = logoutUrl.replace('%7BURL_NEXT%7D', 'http://tuto.com');
+        console.log(logoutUrl);
+        var webview = document.createElement('webview');
+        webview.setAttribute('partition', 'persist:facebookconnect.tuto.com');
+        webview.src = logoutUrl;
+        document.body.appendChild(webview);
+        var loadredirect = function () {
+            webview.removeEventListener('loadredirect', loadredirect);
+            // document.body.removeChild(webview);
+            s('disconnected from facebook');
+        };
+        webview.addEventListener('loadredirect', loadredirect);
     } else {
-      s(response)
+        f('logout url not set');
     }
-  })
 }
 
-exports.browserInit = function browserInit (appId, version, s) {
-  console.warn("browserInit is deprecated and may be removed in the future");
-  console.trace();
-}
-
-if (window.location.protocol === "file:") {
-  console.warn("Facebook JS SDK is not supported when using file:// protocol");
-} else {
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : APP_ID,  // APP_ID is populated by the cordova after_prepare hook
-      xfbml      : true,
-      version    : 'v2.7'
+exports.api = function api(graphPath, permissions, s, f) {
+    FB.api(graphPath, {fields: permissions}, function (res) {
+        if (!res || res.error) {
+            f(!res ? 'error occurred' : res.error);
+        } else if (res.email !== undefined) {
+            s(res);
+        } else {
+            f('ApiRequestFailed');
+        }
     });
+}
 
-    __fbSdkReady = true;
+exports.storeLogoutUrl = function (url) {
+    logoutUrl = url;
+}
 
-    for (var i = 0; i < __fbCallbacks.length; i++) {
-      __fbCallbacks[i]();
-    }
-  };
-
-  (function(d, s, id){
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) {return;}
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode.insertBefore(js, fjs);
-  }(document, 'script', 'facebook-jssdk'));
+exports.browserInit = function browserInit(appId, version, s) {
+    console.warn("browserInit is deprecated and may be removed in the future");
+    console.trace();
 }
