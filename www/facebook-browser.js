@@ -30,7 +30,7 @@ exports.login = function login(permissions, s, f) {
                 webview.setAttribute('style', 'opacity:1;');
                 el.setAttribute('login-loaded', '');
             }
-        } else {
+        } else if (currUrl.hostname === 'www.facebook.com' && currUrl.pathname === '/connect/login_success.html') {
             _parseAndProcess(event);
         }
     }
