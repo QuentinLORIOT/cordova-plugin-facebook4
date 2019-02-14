@@ -2,11 +2,11 @@ var FB = window.require('fb');
 var logoutUrl;
 
 exports.getLoginStatus = function getLoginStatus(s, f) {
-
+    f('not supported by NW browser');
 }
 
 exports.showDialog = function showDialog(options, s, f) {
-
+    f('not supported by NW browser');
 }
 
 // Attach this to a UI element, this requires user interaction.

@@ -272,9 +272,6 @@
         // Create native params
         FBSDKShareLinkContent *content = [[FBSDKShareLinkContent alloc] init];
         content.contentURL = [NSURL URLWithString:[params objectForKey:@"link"]];
-        content.contentTitle = [params objectForKey:@"caption"];
-        content.imageURL = [NSURL URLWithString:[params objectForKey:@"picture"]];
-        content.contentDescription = [params objectForKey:@"description"];
 
         self.dialogCallbackId = command.callbackId;
         [FBSDKMessageDialog showWithContent:content delegate:self];
@@ -284,9 +281,6 @@
         // Create native params
         FBSDKShareLinkContent *content = [[FBSDKShareLinkContent alloc] init];
         content.contentURL = [NSURL URLWithString:params[@"href"]];
-        content.contentTitle = params[@"caption"];
-        content.imageURL = [NSURL URLWithString:params[@"picture"]];
-        content.contentDescription = params[@"description"];
         content.hashtag = [FBSDKHashtag hashtagWithString:[params objectForKey:@"hashtag"]];
         content.quote = params[@"quote"];
 
@@ -480,33 +474,6 @@
 
         [request startWithCompletionHandler:graphHandler];
     }];
-}
-
-- (void) appInvite:(CDVInvokedUrlCommand *) command
-{
-    NSDictionary *options = [command.arguments objectAtIndex:0];
-    NSString *url = options[@"url"];
-    NSString *picture = options[@"picture"];
-    CDVPluginResult *result;
-    self.dialogCallbackId = command.callbackId;
-
-    FBSDKAppInviteContent *content = [[FBSDKAppInviteContent alloc] init];
-
-    if (url) {
-        content.appLinkURL = [NSURL URLWithString:url];
-    }
-    if (picture) {
-        content.appInvitePreviewImageURL = [NSURL URLWithString:picture];
-    }
-
-    FBSDKAppInviteDialog *dialog = [[FBSDKAppInviteDialog alloc] init];
-    if ((url || picture) && [dialog canShow]) {
-        [FBSDKAppInviteDialog showFromViewController:[self topMostController] withContent:content delegate:self];
-    } else {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:self.dialogCallbackId];
-    }
-
 }
 
 - (void) getDeferredApplink:(CDVInvokedUrlCommand *) command
@@ -717,46 +684,6 @@
                                                       messageAsString:@"User cancelled."];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.dialogCallbackId];
     self.dialogCallbackId = nil;
-}
-
-
-#pragma mark - FBSDKAppInviteDialogDelegate
-
-// add these methods in if you extend your sharing view controller with <FBSDKAppInviteDialogDelegate>
-- (void)appInviteDialog:(FBSDKAppInviteDialog *)appInviteDialog didCompleteWithResults:(NSDictionary *)results
-{
-
-    if (!self.dialogCallbackId) {
-        return;
-    }
-
-    NSLog(@"app invite dialog did complete");
-    NSLog(@"result::%@", results);
-
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                  messageAsDictionary:results];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.dialogCallbackId];
-    self.dialogCallbackId = nil;
-
-}
-
-
-
-- (void)appInviteDialog:(FBSDKAppInviteDialog *)appInviteDialog didFailWithError:(NSError *)error
-{
-    if (!self.dialogCallbackId) {
-        return;
-    }
-
-    NSLog(@"app invite dialog did fail");
-    NSLog(@"error::%@", error);
-
-    CDVPluginResult *pluginResult;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                     messageAsString:[NSString stringWithFormat:@"Error: %@", error.description]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.dialogCallbackId];
-    self.dialogCallbackId = nil;
-
 }
 
 
