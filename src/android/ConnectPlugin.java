@@ -1,9 +1,12 @@
 package org.apache.cordova.facebook;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebView;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -85,6 +88,9 @@ public class ConnectPlugin extends CordovaPlugin {
 
         // create AppEventsLogger
         logger = AppEventsLogger.newLogger(cordova.getActivity().getApplicationContext());
+
+        // augment web view to enable hybrid app events
+        enableHybridAppEvents();
 
         // Set up the activity result callback to this class
         cordova.setActivityResultCallback(this);
@@ -221,13 +227,13 @@ public class ConnectPlugin extends CordovaPlugin {
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
         // Developers can observe how frequently users activate their app by logging an app activation event.
-        AppEventsLogger.activateApp(cordova.getActivity());
+        AppEventsLogger.activateApp(cordova.getActivity().getApplication());
     }
 
     @Override
     public void onPause(boolean multitasking) {
         super.onPause(multitasking);
-        AppEventsLogger.deactivateApp(cordova.getActivity());
+        AppEventsLogger.deactivateApp(cordova.getActivity().getApplication());
     }
 
     @Override
@@ -299,7 +305,7 @@ public class ConnectPlugin extends CordovaPlugin {
             cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    AppEventsLogger.activateApp(cordova.getActivity());
+                    AppEventsLogger.activateApp(cordova.getActivity().getApplication());
                 }
             });
 
@@ -701,6 +707,23 @@ public class ConnectPlugin extends CordovaPlugin {
         }
     }
 
+    private void enableHybridAppEvents() {
+        try {
+            Context appContext = cordova.getActivity().getApplicationContext();
+            Resources res = appContext.getResources();
+            int enableHybridAppEventsId = res.getIdentifier("fb_hybrid_app_events", "bool", appContext.getPackageName());
+            boolean enableHybridAppEvents = enableHybridAppEventsId != 0 && res.getBoolean(enableHybridAppEventsId);
+            if (enableHybridAppEvents) {
+                AppEventsLogger.augmentWebView((WebView) this.webView.getView(), appContext);
+                Log.d(TAG, "FB Hybrid app events are enabled");
+            } else {
+                Log.d(TAG, "FB Hybrid app events are not enabled");
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "FB Hybrid app events cannot be enabled");
+        }
+    }
+
     private ShareLinkContent buildContent(Map<String, String> paramBundle) {
         ShareLinkContent.Builder builder = new ShareLinkContent.Builder();
         if (paramBundle.containsKey("href"))
@@ -723,7 +746,12 @@ public class ConnectPlugin extends CordovaPlugin {
 
     // Simple active session check
     private boolean hasAccessToken() {
-        return AccessToken.getCurrentAccessToken() != null;
+        AccessToken token = AccessToken.getCurrentAccessToken();
+
+		if (token == null)
+			return false;
+
+		return !token.isExpired();
     }
 
     private void handleError(FacebookException exception, CallbackContext context) {

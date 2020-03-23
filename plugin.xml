@@ -2,7 +2,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="cordova-plugin-facebook4"
-        version="3.2.0">
+        version="6.4.0">
 
     <name>Facebook Connect</name>
 
@@ -19,7 +19,8 @@
 
     <preference name="APP_ID" />
     <preference name="APP_NAME" />
-    <preference name="FACEBOOK_ANDROID_SDK_VERSION" default="4.38.1"/>
+    <preference name="FACEBOOK_HYBRID_APP_EVENTS" default="false" />
+    <preference name="FACEBOOK_ANDROID_SDK_VERSION" default="5.13.0"/>
 
     <engines>
         <!-- Requires > 3.5.0 because of the custom Framework tag for iOS [CB-6698] -->
@@ -48,9 +49,17 @@
         </config-file>
 
         <source-file src="src/android/facebookconnect.xml" target-dir="res/values" />
+        <!-- Used for cordova-android 6 -->
+        <config-file target="res/values/facebookconnect.xml" parent="/*">
+            <string name="fb_app_id">$APP_ID</string>
+            <string name="fb_app_name">$APP_NAME</string>
+            <bool name="fb_hybrid_app_events">$FACEBOOK_HYBRID_APP_EVENTS</bool>
+        </config-file>
+        <!-- Used for cordova-android 7 -->
         <config-file target="app/src/main/res/values/facebookconnect.xml" parent="/*">
             <string name="fb_app_id">$APP_ID</string>
             <string name="fb_app_name">$APP_NAME</string>
+            <bool name="fb_hybrid_app_events">$FACEBOOK_HYBRID_APP_EVENTS</bool>
         </config-file>
 
         <config-file target="app/src/main/AndroidManifest.xml" parent="application">
@@ -96,6 +105,10 @@
 
         <config-file target="*-Info.plist" parent="FacebookDisplayName">
             <string>$APP_NAME</string>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="FacebookHybridAppEvents">
+            <string>$FACEBOOK_HYBRID_APP_EVENTS</string>
         </config-file>
 
         <config-file target="*-Info.plist" parent="CFBundleURLTypes">
@@ -147,13 +160,17 @@
           </array>
         </config-file>
 
-        <!-- Bolts framework -->
-        <framework src="src/ios/Bolts.framework" custom="true" />
-
-        <!-- Facebook framework -->
-        <framework src="src/ios/FBSDKCoreKit.framework" custom="true" />
-        <framework src="src/ios/FBSDKLoginKit.framework" custom="true" />
-        <framework src="src/ios/FBSDKShareKit.framework" custom="true" />
+        <!-- Facebook SDK -->
+        <podspec>
+            <config>
+                <source url="https://cdn.cocoapods.org/"/>
+            </config>
+            <pods use-frameworks="true">
+                <pod name="FBSDKCoreKit" spec="5.15.0"/>
+                <pod name="FBSDKLoginKit" spec="5.15.0"/>
+                <pod name="FBSDKShareKit" spec="5.15.0"/>
+            </pods>
+        </podspec>
 
     </platform>
 
