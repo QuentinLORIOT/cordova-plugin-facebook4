@@ -194,10 +194,9 @@
         </config-file>
     </platform>
 
-
     <!-- electron -->
     <platform name="electron">
-        <js-module src="www/electron/connectPlugin.js" name="FacebookConnectPluginElectron">
+        <js-module src="src/electron/connectPlugin.js" name="FacebookConnectPluginElectron">
             <clobbers target="facebookConnectPlugin" />
         </js-module>
         <config-file target="config.xml" parent="/*">
