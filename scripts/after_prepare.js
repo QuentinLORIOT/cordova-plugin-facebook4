@@ -23,7 +23,11 @@ var files = [
     "platforms/browser/www/plugins/cordova-plugin-facebook4/www/facebook-browser.js",
     "platforms/browser/platform_www/plugins/cordova-plugin-facebook4/www/facebook-browser.js",
     "platforms/browser/www/cordova.js",
-    "platforms/browser/platform_www/cordova.js"
+    "platforms/browser/platform_www/cordova.js",
+    "platforms/electron/www/plugins/cordova-plugin-facebook4/src/electron/connectPlugin.js",
+    "platforms/electron/platform_www/plugins/cordova-plugin-facebook4/src/electron/connectPlugin.js",
+    "platforms/electron/www/cordova.js",
+    "platforms/electron/platform_www/cordova.js"
 ]
 
 for(var i in files) {

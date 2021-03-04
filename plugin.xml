@@ -194,6 +194,27 @@
         </config-file>
     </platform>
 
+
+    <!-- electron -->
+    <platform name="electron">
+        <js-module src="www/electron/connectPlugin.js" name="FacebookConnectPluginElectron">
+            <clobbers target="facebookConnectPlugin" />
+        </js-module>
+        <config-file target="config.xml" parent="/*">
+            <feature name="FacebookConnectPlugin">
+                <param name="electron-package" value="FacebookConnectPluginElectron"/>
+                <param name="onload" value="true" />
+            </feature>
+            <plugin name="FacebookConnectPlugin" value="FacebookConnectPlugin"/>
+            <access origin="https://m.facebook.com" />
+            <access origin="https://connect.facebook.net" />
+            <access origin="https://graph.facebook.com" />
+            <access origin="https://api.facebook.com" />
+            <access origin="https://*.fbcdn.net" />
+            <access origin="https://*.akamaihd.net" />
+        </config-file>
+    </platform>
+
     <!-- after_prepare hook to populate APP_ID -->
     <hook type="after_prepare" src="scripts/after_prepare.js" />
 </plugin>
