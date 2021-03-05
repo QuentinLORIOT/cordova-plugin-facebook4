@@ -23,7 +23,6 @@ exports.login = function login(permissions, s, f) {
     webview.addEventListener('load-commit', _loadcommit);
 
     function _loadcommit(event) {
-        console.log('_loadcommit event', event);
         var currUrl = document.createElement('a');
         currUrl.href = event.url;
         if (currUrl.hostname === 'www.facebook.com' && currUrl.pathname === '/login.php') {
@@ -79,7 +78,6 @@ exports.appInvite = function appInvite(options, s, f) {
 exports.logout = function logout(s, f) {
     if (logoutUrl) {
         logoutUrl = logoutUrl.replace('%7BURL_NEXT%7D', 'http://tuto.com');
-        console.log(logoutUrl);
         var webview = document.createElement('webview');
         webview.setAttribute('partition', 'persist:facebookconnect.tuto.com');
         webview.src = logoutUrl;
